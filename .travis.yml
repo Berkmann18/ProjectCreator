@@ -5,13 +5,10 @@ cache:
 notifications:
   email: false
 node_js:
-  - 'node'
-  - '10'
-  - '9'
-  - '8'
-  - '6'
+  - 'stable'
+  - 'lts/*'
 install:
-  - npm i
+  - npm ci
   - npm i -g jest codecov eslint
 script:
   - npm run lint
@@ -20,7 +17,19 @@ script:
   - codecov
 after_success:
   - snyk monitor
-  - npm run travis-deploy-once "npm run semantic-release"
+jobs:
+  include:
+    - stage: release
+      node_js: 'stable'
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: npm run semantic-release
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+stages:
+  - name: test
+  - name: release
+    if: branch = master
